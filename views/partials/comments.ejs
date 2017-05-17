@@ -4,11 +4,11 @@
             <p class="login"><%= comment.user.login %></p>
             <p><%= comment.content %></p>
         </div>
-		<% if (session.administrator) { %>
+		<% if (session.administrator || session.userID == comment.user.id) { %>
 			|
 			<a href="/entry/<%= entry.id %>/comment/<%= comment.id %>/update">edit</a>
 			|
-			<form method="post" action="/entry/<%= entry.id %>/delete" style="display:inline">
+			<form method="post" action="/entry/<%= entry.id %>/comment/<%= comment.id %>/delete" style="display:inline">
 				<input type="submit" value="x">
 			</form>
 		<% } %>

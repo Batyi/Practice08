@@ -343,26 +343,19 @@ server.post(['/entry/create', '/entry/:id/update'], (request, response) => {
 server.post('/entry/:id/delete', (request, response) => {
     if (!request.session.authorized) {
         response.status(401).end('Unauthorized');
-
         return;
     }
-
     if (!request.session.administrator) {
         response.status(403).end('Forbidden');
-
         return;
     }
-
     const previousLocation = request.header('Referer') || '/entries';
-
     const id = request.params['id'];
     if (!id) {
         request.session.errors.push('The blog entry is unknown.');
         response.redirect(previousLocation);
-
         return;
     }
-
     Entry.destroy({
         'where': {
             'id': id
@@ -371,9 +364,34 @@ server.post('/entry/:id/delete', (request, response) => {
         response.redirect('/entries');
     }).catch(error => {
         console.error(error);
-
         request.session.errors.push('Failed to remove the blog entry.');
         response.redirect('/entries');
+    });
+});
+
+server.post('/entry/:entryID/comment/:id/delete', (request, response) => {
+    if (!request.session.authorized) {
+        response.status(401).end('Unauthorized');
+        return;
+    }
+    const previousLocation = request.header('Referer') || '/entries';
+    const id = request.params['id'];
+	const entryID = request.params['entryID'];
+	if (!id || !entryID) {
+        request.session.errors.push('The blog entry comment is unknown.');
+        response.redirect(previousLocation);
+        return;
+    }
+    Comment.destroy({
+        'where': {
+            'id': id
+        }
+    }).then(() => {
+        response.redirect('/entry/' + entryID);
+    }).catch(error => {
+        console.error(error);
+        request.session.errors.push('Failed to remove the blog entry comment.');
+        response.redirect('/entry/' + entryID);
     });
 });
 
@@ -481,10 +499,6 @@ server.post(['/entry/:entryID/comment/create',
 server.get(['/entry/:entryID/comment/:id/update'], (request, response) => {
     if (!request.session.authorized) {
         response.status(401).end('Unauthorized');
-        return;
-    }
-    if (!request.session.administrator) {
-        response.status(403).end('Forbidden');
         return;
     }
     const previousLocation = request.header('Referer') || '/entries';
